@@ -411,7 +411,7 @@ class Faulty
 
     # @return [Boolean] True if the circuit transitioned to closed
     def success!(status)
-      storage.entry(self, Faulty.current_time, true)
+      storage.entry(self, Faulty.current_time, true, nil)
       closed = close! if status.half_open?
 
       options.notifier.notify(:circuit_success, circuit: self)
@@ -420,8 +420,7 @@ class Faulty
 
     # @return [Boolean] True if the circuit transitioned to open
     def failure!(status, error)
-      entries = storage.entry(self, Faulty.current_time, false)
-      status = Status.from_entries(entries, **status.to_h)
+      status = storage.entry(self, Faulty.current_time, false, status)
       options.notifier.notify(:circuit_failure, circuit: self, status: status, error: error)
 
       opened = if status.half_open?
